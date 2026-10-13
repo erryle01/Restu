@@ -1,0 +1,9 @@
+<?php
+$e = static fn($value): string => htmlspecialchars((string) ($value ?? ''), ENT_QUOTES, 'UTF-8');
+$products = $products ?? [];
+?>
+<div class="container-fluid py-4"><div class="mb-4"><h1 class="h3 mb-1">Inventory</h1><p class="text-muted mb-0">Track stock and record adjustments.</p></div>
+<?php if (!empty($success)): ?><div class="alert alert-success"><?= $e($success) ?></div><?php endif; ?><?php if (!empty($error)): ?><div class="alert alert-danger"><?= $e($error) ?></div><?php endif; ?>
+<div class="card border-0 shadow-sm"><div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th>SKU</th><th>Product</th><th>Current stock</th><th>Threshold</th><th>Adjust</th></tr></thead><tbody>
+<?php foreach ($products as $product): ?><tr><td><?= $e($product['sku']) ?></td><td class="fw-semibold"><?= $e($product['name']) ?></td><td class="<?= (float) $product['stock_quantity'] <= (float) $product['low_stock_threshold'] ? 'text-danger fw-semibold' : '' ?>"><?= $e($product['stock_quantity']) ?></td><td><?= $e($product['low_stock_threshold']) ?></td><td><?php if (Auth::can('inventory.adjust')): ?><form method="POST" action="<?= BASE_URL ?>/inventory/adjust/<?= (int) $product['id'] ?>" class="d-flex gap-1"><input class="form-control form-control-sm" style="max-width:100px" type="number" step="0.001" name="quantity" placeholder="+/- qty" required><select class="form-select form-select-sm" name="movement_type"><option value="purchase">Purchase</option><option value="adjustment">Adjustment</option><option value="return">Return</option></select><button class="btn btn-sm btn-outline-primary" title="Apply stock adjustment"><i data-lucide="plus-minus"></i></button></form><?php endif; ?></td></tr><?php endforeach; ?>
+<?php if (!$products): ?><tr><td colspan="5" class="text-center text-muted py-5">No products found.</td></tr><?php endif; ?></tbody></table></div></div></div>
